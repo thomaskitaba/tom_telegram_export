@@ -37,7 +37,6 @@ pip install telethon
 - `telegram_chat_export.py` — main script
 - `telegram_backup.session` — created after initial login (Telethon session)
 - `telegram_exports/` — output folder created by the script
- - `.env` — (optional) file with TELEGRAM_API_ID and TELEGRAM_API_HASH; the script will load credentials from this file if present
 
 ## Usage
 
@@ -118,4 +117,3 @@ Each `messages.txt` contains lines like:
 ---
 
 If you'd like, I can also add a `requirements.txt` containing `telethon`.
-# tom_telegram_export
