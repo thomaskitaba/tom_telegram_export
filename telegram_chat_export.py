@@ -6,7 +6,7 @@ import sys
 from telethon import TelegramClient
 from telethon.tl.types import MessageMediaDocument, MessageMediaPhoto
 
-# replace with your own values from my.telegram.org
+# Replace with your own values from my.telegram.org
 api_id = 38468061
 api_hash = '2a9d1bc0fbc68f726e084d86ca59f25b'
 client = TelegramClient('telegram_backup', api_id, api_hash)
@@ -74,11 +74,16 @@ async def main():
         files_dir = os.path.join(chat_dir, 'files')
         os.makedirs(files_dir, exist_ok=True)
 
-        print(f"Exporting {chat_name}...")
+        print(f"\nExporting chat '{chat_name}'...")
 
         sender_cache = {}
+        msg_count = 0
         with open(messages_file, 'w', encoding='utf-8') as f:
             async for message in client.iter_messages(dialog.id, limit=max_messages):
+                msg_count += 1
+                if msg_count % 10 == 0:
+                    print(f"{msg_count} messages processed...", end='\r')
+
                 sender_name = 'System'
                 sid = getattr(message, 'sender_id', None)
                 if sid:
@@ -104,22 +109,25 @@ async def main():
 
                 text = getattr(message, 'text', None) or getattr(message, 'message', '') or ''
 
-                # Export files (skip videos)
+                # Export files: photos and documents (skip videos/audio)
                 if message.media:
-                    if isinstance(message.media, MessageMediaDocument):
-                        mime_type = getattr(message.media.document, 'mime_type', '')
-                        if not mime_type.startswith('video/'):
-                            try:
-                                file_path = await client.download_media(message, file=files_dir)
-                                text += f" [File: {os.path.basename(file_path)}]"
-                            except Exception as e:
-                                text += f" [File download failed: {e}]"
-                    elif isinstance(message.media, MessageMediaPhoto):
-                        try:
+                    try:
+                        if isinstance(message.media, MessageMediaDocument):
+                            mime_type = getattr(message.media.document, 'mime_type', '')
+                            size = getattr(message.media.document, 'size', 0)
+                            filename = getattr(message.media.document, 'attributes', [])
+                            # Skip videos, audio, and ZIPs > 20MB
+                            if not (mime_type.startswith('video/') or mime_type.startswith('audio/')):
+                                if mime_type == 'application/zip' and size > 20 * 1024 * 1024:
+                                    text += f" [ZIP skipped, size > 20MB]"
+                                else:
+                                    file_path = await client.download_media(message, file=files_dir)
+                                    text += f" [File: {os.path.basename(file_path)}]"
+                        elif isinstance(message.media, MessageMediaPhoto):
                             file_path = await client.download_media(message, file=files_dir)
                             text += f" [Photo: {os.path.basename(file_path)}]"
-                        except Exception as e:
-                            text += f" [Photo download failed: {e}]"
+                    except Exception as e:
+                        text += f" [Media download failed: {e}]"
 
                 if not str(text).strip():
                     continue
@@ -133,7 +141,9 @@ async def main():
                 line = f"[{dt_str}] {sender_name}: {text}\n"
                 f.write(line)
 
-    print("All chats exported successfully!")
+        print(f"\nFinished exporting chat '{chat_name}'. Total messages: {msg_count}")
+
+    print("\nAll chats exported successfully!")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,22 @@
+{
+  "features": [
+    "PROJECTION_STRENGTH_LEVEL",
+    "FG_PCT_LEVEL",
+    "PLUS_MINUS_LEVEL",
+    "LINEUP_NET_RATING_TALENT_LEVEL",
+    "AVG_FORM_RATIO_AST_LEVEL"
+  ],
+  "accuracy": 0.7057,
+  "feature_descriptions": {
+    "PROJECTION_STRENGTH_LEVEL": "LSTM neural network player forecasts",
+    "FG_PCT_LEVEL": "Shooting efficiency",
+    "PLUS_MINUS_LEVEL": "On-court impact",
+    "LINEUP_NET_RATING_TALENT_LEVEL": "Overall lineup quality",
+    "AVG_FORM_RATIO_AST_LEVEL": "LSTM-enhanced playmaking"
+  },
+  "class_descriptions": {
+    "0": "Low Efficiency",
+    "1": "Medium Efficiency",
+    "2": "High Efficiency"
+  }
+}
